@@ -81,7 +81,7 @@ export default {
         redirect: 'follow'
       };
 
-      fetch("http://localhost:8000/register/", requestOptions)
+      fetch("https://todoappbackendapi.herokuapp.com/register/", requestOptions)
         .then(response => response.text())
         .then(result => console.log(result))
         .catch(error => console.log('error', error));
@@ -101,6 +101,6 @@ h1 {
 }
 
 .main{
-  min-width: 400px;
+  min-width: 600px;
 }
 </style>

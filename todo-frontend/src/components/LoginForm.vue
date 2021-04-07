@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="main">
     <h1>Sign In</h1>
     <br />
     <v-form ref="form" v-model="valid" lazy-validation>
@@ -23,6 +23,15 @@
         @click:append="show1 = !show1"
       ></v-text-field>
 
+      <v-alert
+      dense
+      outlined
+      type="error"
+      v-if="incorrectPass"
+    >
+      Incorrect Password
+    </v-alert>
+
       <v-btn :disabled="!valid" color="primary" class="mr-4" @click="submit">
         Submit
       </v-btn>
@@ -34,6 +43,7 @@
 
 <script>
 export default {
+  props:['incorrectPass'],
   data() {
     return {
       valid: true,
@@ -47,6 +57,7 @@ export default {
   methods: {
     submit(e) {
       e.preventDefault();
+      this.$emit("loading_sign", true);
       this.getAuthToken(this.name, this.password);
       // console.log(this.token);
     },
@@ -61,11 +72,12 @@ export default {
         redirect: "follow",
       };
 
-    fetch("http://localhost:8000/authtoken/", requestOptions)
+    fetch("https://todoappbackendapi.herokuapp.com/authtoken/", requestOptions)
         .then((response) => response.json())
         .then((result) => {
           this.token = result.token;
-          this.$emit("login", this.token);        
+          this.$emit("login", this.token);
+          console.log(result.token);  
         })
         .catch((error) => console.log("error", error));
     },
@@ -76,5 +88,8 @@ export default {
 <style scoped>
 h1 {
   font-weight: 300;
+}
+.main{
+  min-width: 600px;
 }
 </style>

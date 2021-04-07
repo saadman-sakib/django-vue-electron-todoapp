@@ -1,6 +1,13 @@
 <template>
   <v-app>
     <v-main>
+      <div  v-if="loading" class="loading">
+      <v-progress-circular
+        :size="200"
+        color="primary"
+        indeterminate
+      ></v-progress-circular>
+      </div>
       <SignupForm
         v-if="showSignUpForm && !token"
         class="card"
@@ -8,12 +15,14 @@
         @signUp="showLogin"
       />
       <LoginForm
-        @login="login"
-        v-if="!showSignUpForm && !token"
+        v-show="!showSignUpForm && !token && !loading"
         class="card"
+        :incorrectPass="incorrectPass"
+        @login="login"
         @update="showSignUp"
+        @loading_sign="_loading"
       />
-      <div v-if="token !== null">
+      <div v-if="token !== null && !loading">
         <AddTaskForm :token="token" @addTask="addTask" class="addtask" />
         <TaskList :token="token" @deleteTask="deleteTask" :tasks="tasks" />
         <br /><br /><br />
@@ -53,11 +62,13 @@ export default {
 
   data() {
     return {
-      token: localStorage.getItem('token'),
+      token: localStorage.getItem("token"),
       username: "",
       password: "",
       showSignUpForm: false,
+      loading: false,
       tasks: [],
+      incorrectPass: false,
     };
   },
   methods: {
@@ -68,26 +79,22 @@ export default {
       this.showSignUpForm = data;
     },
     logout() {
-      localStorage.removeItem('token');
-      this.token = null
+      localStorage.removeItem("token");
+      this.token = null;
     },
     addTask(task) {
       var newTask = {};
       newTask.title = task.name;
       newTask.time = task.date + "T" + task.time + "Z";
       newTask.is_done = false;
-      newTask.id =
-        this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1;
+      newTask.id = this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1;
       this.tasks.push(newTask);
-      console.log(this.tasks);
       this.addFetch(this.token, newTask.title, newTask.time);
     },
     deleteTask(id) {
-      console.log(this.tasks);
       this.tasks = this.tasks.filter((task) => {
         return task.id !== id;
       });
-      console.log(this.tasks, id);
     },
     addFetch(token, title, time) {
       var requestOptions = {
@@ -100,17 +107,25 @@ export default {
         redirect: "follow",
       };
 
-      fetch("http://localhost:8000/todos/", requestOptions)
+      fetch("https://todoappbackendapi.herokuapp.com/todos/", requestOptions)
         .then((response) => response.json())
         .then((result) => console.log(result))
         .catch((error) => console.log("error", error));
     },
     login(token) {
-      this.token = token;
-      localStorage.setItem('token', token);
-      this.fetchAllTask();
+      if (token !== undefined ) {
+        this.token = token;
+        localStorage.setItem("token", token);
+        this.fetchAllTask();
+      }else{
+        this.incorrectPass = true;
+        this.loading = false;
+      }
     },
-    fetchAllTask(){
+    _loading(data) {
+      this.loading = data;
+    },
+    fetchAllTask() {
       var requestOptions = {
         method: "GET",
         headers: {
@@ -119,14 +134,18 @@ export default {
         },
         redirect: "follow",
       };
-      fetch("http://localhost:8000/todos/", requestOptions)
+      fetch("https://todoappbackendapi.herokuapp.com/todos/", requestOptions)
         .then((response) => response.json())
-        .then((result) => (this.tasks = result))
+        .then((result) => {
+          this.tasks = result;
+          this.loading = false;
+        })
         .catch((error) => console.log("error", error));
     },
   },
   mounted() {
-    if (localStorage.getItem('token') !== null) {
+    if (localStorage.getItem("token") !== null) {
+      this.loading = true;
       this.fetchAllTask();
     }
   },
@@ -158,6 +177,12 @@ export default {
 .log_out {
   font-weight: 400;
   color: rgb(46, 27, 16);
+}
+
+.loading{
+  display: grid;
+  place-items: center;
+  margin-top: 300px;
 }
 
 /* width */

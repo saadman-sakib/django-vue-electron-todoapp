@@ -126,7 +126,7 @@ export default {
         redirect: "follow",
       };
 
-      fetch(`http://localhost:8000/todos/${id}/`, requestOptions)
+      fetch(`https://todoappbackendapi.herokuapp.com/todos/${id}/`, requestOptions)
         .then((response) => response.text())
         .then((result) => console.log(result))
         .catch((error) => console.log("error", error));
@@ -141,7 +141,7 @@ export default {
         redirect: "follow",
       };
 
-      fetch(`http://localhost:8000/todos/${this.id}/`, requestOptions)
+      fetch(`https://todoappbackendapi.herokuapp.com/todos/${this.id}/`, requestOptions)
         .then((response) => response.text())
         .then((result) => console.log(result))
         .catch((error) => console.log("error", error));
